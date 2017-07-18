@@ -20,7 +20,7 @@ void setRefreshRate(float refresh_rate);
 
 /// Set the minimun error for computation of the PID loop. The default is 0.0
 /// It can be set to prevent integral windup or updates with minimal errors
-void setErrorThreshold(float threshold);
+
 
 /// Set the lower limit of the output. Output will be clamped to this value.
 /// If clamped, the integral will not be computed to prevent integral windup.
@@ -49,4 +49,4 @@ float refresh(float feedback_input);
 /// ÷ÿ÷√PID
 void reset();
 
-void pidInit(float refresh_interval, float error_threshold, float upper_limit, float lower_limit);
+void pidInit(float refresh_interval, float upper_limit, float lower_limit);

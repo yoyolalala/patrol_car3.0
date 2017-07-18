@@ -1,5 +1,5 @@
 #include "PID.h"
-float error, interval, set_point, output_lower_limit, output_upper_limit, last_error, last_output, error_threshold, integral, Ki, Kd, Kp;
+float error, interval, set_point, output_lower_limit, output_upper_limit, last_error, last_output, integral, Ki, Kd, Kp;
 void setKp(float kp) 
 {
 	Kp = kp;
@@ -27,13 +27,9 @@ void setRefreshInterval(float refresh_interval)
 	interval = refresh_interval;
 }
 
-void setRefreshRate(float refresh_rate) {
-	interval = 1.f / refresh_rate;
-}
-
-void setErrorThreshold(float threshold) 
+void setRefreshRate(float refresh_rate) 
 {
-	error_threshold = threshold;
+	interval = 1.f / refresh_rate;
 }
 
 void setOutputLowerLimit(float lower_limit) 
@@ -87,10 +83,9 @@ void reset()
 	integral = 0;
 	error = 0;
 }
-void pidInit(float refresh_interval, float threshold, float upper_limit, float lower_limit)
+void pidInit(float refresh_interval, float upper_limit, float lower_limit)
 {
 	setRefreshInterval(refresh_interval);
-	setErrorThreshold(threshold);
 	setOutputUpperLimit(upper_limit);
 	setOutputLowerLimit(lower_limit);
 }
