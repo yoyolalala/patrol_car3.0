@@ -8,6 +8,7 @@
 #include "PID.h"
 #define INF 3.402823466e+38F
 u8 pct1=70;
+u8 pct2=70;
 u8 i,len;
 u16 inputEncoderVal=0;
 extern int leftEncoderVal;
@@ -16,11 +17,11 @@ extern float set_point;
 float pidOutput;
 void setup()
 {
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);//设置系统中断优先级分组2
 	delay_init(168);  //初始化延时函数 SYSCLOCK
 	LED_Init();
-	uart_init(115200);//初始化串口波特率为115200
- 	motorInit();
+	motorInit();
+	uart_init(115200);//串口初始化必须放在电机初始化后
 	Encoder_Init_TIM4();
 	TIM2_Int_Init(499, 8399); //84Mhz/8400
 	
@@ -29,9 +30,13 @@ void setup()
 int main(void)
 { 
 	setup();
-	motor1SetPct(pct1); //越大 转速越慢  70-38    30-130
+
 	delay_ms(1000);
-	setWeights(0.42, 0.01, 0.0001); //
+	motor1SetPct(pct1);//越大 转速越慢  70-38    30-130
+	motor2SetPct(pct2);
+	
+	setWeights(0.42, 0.01, 0.0001); 
+
     while(1) 
 	{ 
 		if(USART_RX_STA&0x8000)
