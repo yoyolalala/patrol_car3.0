@@ -1,6 +1,7 @@
 #include "encoder.h"
 int leftEncoderVal;
-void Encoder_Init_TIM4(void)  //TIM4_CH1 PD12   TIM4_CH2  PD13
+int rightEncoderVal;
+void Encoder1_Init_TIM4(void)  //TIM4_CH1 PD12   TIM4_CH2  PD13
 {
     GPIO_InitTypeDef         GPIO_InitStructure; 
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -37,6 +38,43 @@ void Encoder_Init_TIM4(void)  //TIM4_CH1 PD12   TIM4_CH2  PD13
     TIM4->CNT = 0;
     TIM_Cmd(TIM4, ENABLE);  //使能TIM4
 }
+void Encoder2_Init_TIM3(void) //TIM3_CH1 PC6   TIM3_CH2 PC7
+{
+	GPIO_InitTypeDef         GPIO_InitStructure; 
+	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+	TIM_ICInitTypeDef        TIM_ICInitStructure;
+	NVIC_InitTypeDef         NVIC_InitStructure;
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);
+ 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);
+	
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource6,GPIO_AF_TIM3);
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource7,GPIO_AF_TIM3);
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6|GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;//配置端口输出类型 0 输出推挽（复位状态）  1输出开漏
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP ;//配置端口上拉下拉的寄存器，00无上拉下拉，01上拉，10 下拉 11保留
+	GPIO_Init(GPIOC,&GPIO_InitStructure); //初始化
+
+	
+    TIM_TimeBaseStructure.TIM_Period = 60000; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Prescaler = 4; //设置用来作为TIMx时钟频率除数的预分频值  不分频
+	TIM_TimeBaseStructure.TIM_ClockDivision = 10; //设置时钟分割:TDTS = Tck_tim
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure); 
+	
+	//设置定时器2为编码器模式  IT1 IT2为上升沿计数
+	TIM_EncoderInterfaceConfig(TIM3, TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
+	TIM_ICStructInit(&TIM_ICInitStructure);
+    TIM_ICInitStructure.TIM_ICFilter = 6;  //输入滤波器
+    TIM_ICInit(TIM3, &TIM_ICInitStructure);
+    TIM_ClearFlag(TIM3, TIM_FLAG_Update);  //清除所有标志位
+    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE); //允许中断更新
+    TIM3->CNT = 0;
+    TIM_Cmd(TIM3, ENABLE);  //使能TIM3
+}
 /**************************************************************************
 函数功能：TIM4中断服务函数
 入口参数：无
@@ -49,7 +87,15 @@ void TIM4_IRQHandler(void)
 	}				   
 	TIM4->SR&=~(1<<0);//清除中断标志位 	    
 }
+void TIM3_IRQHandler(void)
+{ 		    		  			    
+	if(TIM3->SR&0X0001)//溢出中断
+	{    				   				     	    	
+	}				   
+	TIM3->SR&=~(1<<0);//清除中断标志位 	    
+}
 
+//TIM2用作定时计数编码器
 void TIM2_Int_Init(u16 arr, u16 psc)
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -83,6 +129,8 @@ void TIM2_IRQHandler(void)   //TIM2
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);  //????TIMx???????????í??:TIM ?????? 
 		leftEncoderVal = (short)TIM4->CNT;
+		rightEncoderVal = (short)TIM3->CNT;
 		TIM4->CNT=0;
+		TIM3->CNT=0;
 	}
 }

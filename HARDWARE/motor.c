@@ -1,12 +1,12 @@
 #include "motor.h"
 void motorInit(void)
 {
-	motor1_TIM3_PWM_Init(99,83);	//pwm 10khz
+	motor1_TIM1_PWM_Init(99,167);	//pwm 10khz
 	motor2_TIM1_PWM_Init(99,167);	//pwm 10khz
 }
 void motor1SetPct(u8 pct1)
 {
-	TIM_SetCompare4(TIM3, pct1); 
+	TIM_SetCompare4(TIM1, pct1); 
 }
 void motor2SetPct(u8 pct2)
 {

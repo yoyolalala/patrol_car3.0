@@ -6,8 +6,10 @@
 我的淘宝小店：http://shop114407458.taobao.com/
 **************************************************************************/
 #define ENCODER_TIM_PERIOD (u16)(65535)   //不可大于65535 因为F103的定时器是16位的。
-void Encoder_Init_TIM4(void);
+void Encoder1_Init_TIM4(void);
+void Encoder2_Init_TIM3(void);
 void TIM4_IRQHandler(void);
+void TIM3_IRQHandler(void);
 void TIM2_Int_Init(u16 arr, u16 psc);
 void TIM2_IRQHandler(void);
 #endif

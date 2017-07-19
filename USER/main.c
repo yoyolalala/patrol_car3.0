@@ -12,6 +12,7 @@ u8 pct2=70;
 u8 i,len;
 u16 inputEncoderVal=0;
 extern int leftEncoderVal;
+extern int rightEncoderVal;
 extern float error;
 extern float set_point;
 float pidOutput;
@@ -22,7 +23,8 @@ void setup()
 	LED_Init();
 	motorInit();
 	uart_init(115200);//串口初始化必须放在电机初始化后
-	Encoder_Init_TIM4();
+	Encoder1_Init_TIM4();
+	Encoder2_Init_TIM3();
 	TIM2_Int_Init(499, 8399); //84Mhz/8400
 	
 	pidInit(0.01,pct1-1,pct1-99);//初始化刷新间隔 上下限
@@ -35,7 +37,7 @@ int main(void)
 	motor1SetPct(pct1);//越大 转速越慢  70-38    30-130
 	motor2SetPct(pct2);
 	
-	setWeights(0.42, 0.01, 0.0001); 
+	setWeights(0.41, 0.01, 0.0001); 
 
     while(1) 
 	{ 
@@ -62,6 +64,7 @@ int main(void)
 			printf("\r\n");
 		}
 		printf("leftEncoderVal:%d\r\n",leftEncoderVal);
+		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
 	}
 }

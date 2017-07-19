@@ -17,7 +17,8 @@
 
 
 //LED端口定义
-#define LED PBout(10)
+
+#define LED PAout(6)
 
 void LED_Init(void);//初始化		 
 void ledToggle();

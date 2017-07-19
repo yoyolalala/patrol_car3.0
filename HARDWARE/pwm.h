@@ -14,6 +14,6 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	
 
-void motor1_TIM3_PWM_Init(u32 arr,u32 psc);
+void motor1_TIM1_PWM_Init(u32 arr,u32 psc);
 void motor2_TIM1_PWM_Init(u32 arr,u32 psc);
 #endif
