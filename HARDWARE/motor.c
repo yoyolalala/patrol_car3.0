@@ -7,13 +7,25 @@ void motorInit(void)
 void motor1SetPct(u8 pct1)
 {
 	TIM_SetCompare4(TIM1, pct1); 
+	TIM_SetCompare1(TIM9, 99); 
 }
 void motor2SetPct(u8 pct2)
 {
 	TIM_SetCompare1(TIM1, pct2);
+	TIM_SetCompare2(TIM9, 99); 
 }
 void stopMotor()
 {
 	motor1SetPct(99);
-	motor2SetPct(99);//µÁ—π0.4V
+	motor2SetPct(99);
+}
+void motor1SetPctback(u8 pct1)
+{
+	TIM_SetCompare4(TIM1,99); 
+	TIM_SetCompare1(TIM9,pct1); 
+}
+void motor2SetPctback(u8 pct2)
+{
+	TIM_SetCompare1(TIM1, 99);
+	TIM_SetCompare2(TIM9, pct2); 
 }

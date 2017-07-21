@@ -22,17 +22,25 @@ Dialog DLL:      TCM.DLL V1.27.0.0
  
 <h2>Project:</h2>
 D:\desktop\patrol_car3.0\USER\patrol_car.uvprojx
-Project File Date:  07/17/2017
+Project File Date:  07/19/2017
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 4 (build 422)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'patrolCar'
+compiling motor.c...
+..\HARDWARE\motor.h(8): warning:  #1295-D: Deprecated declaration stopMotor - give arg types
+  void stopMotor();
+..\HARDWARE\motor.h(9): warning:  #1-D: last line of file ends without a newline
+  // MOTOR_H
+..\HARDWARE\motor.c(31): warning:  #1-D: last line of file ends without a newline
+  }
+..\HARDWARE\motor.c: 3 warnings, 0 errors
 compiling main.c...
 ..\HARDWARE\led.h(24): warning:  #1295-D: Deprecated declaration ledToggle - give arg types
   void ledToggle();
-..\HARDWARE\motor.h(6): warning:  #1295-D: Deprecated declaration stopMotor - give arg types
+..\HARDWARE\motor.h(8): warning:  #1295-D: Deprecated declaration stopMotor - give arg types
   void stopMotor();
-..\HARDWARE\motor.h(7): warning:  #1-D: last line of file ends without a newline
+..\HARDWARE\motor.h(9): warning:  #1-D: last line of file ends without a newline
   // MOTOR_H
 ..\HARDWARE\PID.h(50): warning:  #1295-D: Deprecated declaration reset - give arg types
   void reset();
@@ -42,9 +50,9 @@ main.c(70): warning:  #1-D: last line of file ends without a newline
   }
 main.c: 6 warnings, 0 errors
 linking...
-Program Size: Code=22120 RO-data=744 RW-data=112 ZI-data=1832  
+Program Size: Code=22488 RO-data=744 RW-data=112 ZI-data=1832  
 FromELF: creating hex file...
-"..\OBJ\PWM.axf" - 0 Error(s), 6 Warning(s).
+"..\OBJ\PWM.axf" - 0 Error(s), 9 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_patrolCar

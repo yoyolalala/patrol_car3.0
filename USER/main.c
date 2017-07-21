@@ -36,7 +36,7 @@ int main(void)
 	delay_ms(1000);
 	motor1SetPct(pct1);//越大 转速越慢  70-38    30-130
 	motor2SetPct(pct2);
-	
+//	stopMotor();
 	setWeights(0.41, 0.01, 0.0001); 
 
     while(1) 
