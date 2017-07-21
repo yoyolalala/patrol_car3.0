@@ -7,6 +7,7 @@
 "..\obj\pid.o"
 "..\obj\motor.o"
 "..\obj\encoder.o"
+"..\obj\servo.o"
 "..\obj\delay.o"
 "..\obj\sys.o"
 "..\obj\usart.o"

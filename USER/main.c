@@ -6,7 +6,8 @@
 #include "math.h"
 #include "encoder.h"
 #include "PID.h"
-#define INF 3.402823466e+38F
+#include "servo.h"
+//#define INF 3.402823466e+38F
 u8 pct1=70;
 u8 pct2=70;
 u8 i,len;
@@ -26,17 +27,17 @@ void setup()
 	Encoder1_Init_TIM4();
 	Encoder2_Init_TIM3();
 	TIM2_Int_Init(499, 8399); //84Mhz/8400
-	
+	servoPwmInit(99,2766);//300hz 84Mhz
 	pidInit(0.01,pct1-1,pct1-99);//初始化刷新间隔 上下限
 }
 int main(void)
 { 
 	setup();
-
+    setServoDegree(43);//43时摇臂位于中间位置
 	delay_ms(1000);
 	motor1SetPct(pct1);//越大 转速越慢  70-38    30-130
 	motor2SetPct(pct2);
-//	stopMotor();
+	//stopMotor();
 	setWeights(0.41, 0.01, 0.0001); 
 
     while(1) 
