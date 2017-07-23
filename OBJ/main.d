@@ -43,5 +43,6 @@
 ..\obj\main.o: ..\HARDWARE\pwm.h
 ..\obj\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 ..\obj\main.o: ..\HARDWARE\encoder.h
+..\obj\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 ..\obj\main.o: ..\HARDWARE\PID.h
 ..\obj\main.o: ..\HARDWARE\servo.h

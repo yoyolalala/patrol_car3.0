@@ -1,6 +1,9 @@
 #include "encoder.h"
 int leftEncoderVal;
 int rightEncoderVal;
+int circle=0;
+int16_t val=0;
+extern bool isStraight;
 void Encoder1_Init_TIM4(void)  //TIM4_CH1 PD12   TIM4_CH2  PD13
 {
     GPIO_InitTypeDef         GPIO_InitStructure; 
@@ -130,6 +133,19 @@ void TIM2_IRQHandler(void)   //TIM2
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);  //????TIMx???????????ик??:TIM ?????? 
 		leftEncoderVal = (short)TIM4->CNT;
 		rightEncoderVal = (short)TIM3->CNT;
+		if(isStraight)
+		{	
+			leftEncoderVal = (short)TIM4->CNT-65535;
+			rightEncoderVal = (short)TIM3->CNT-65535;
+			TIM4->CNT=0;
+			TIM3->CNT=0;
+			val=val+leftEncoderVal;
+			if(val<=-1560)
+			{
+				val=0;
+				circle++;
+			}
+		}
 		TIM4->CNT=0;
 		TIM3->CNT=0;
 	}

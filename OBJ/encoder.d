@@ -36,3 +36,4 @@
 ..\obj\encoder.o: ..\FWLIB\inc\stm32f4xx_dac.h
 ..\obj\encoder.o: ..\FWLIB\inc\stm32f4xx_dcmi.h
 ..\obj\encoder.o: ..\FWLIB\inc\stm32f4xx_fsmc.h
+..\obj\encoder.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
