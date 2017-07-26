@@ -21,7 +21,7 @@ Target DLL:      Segger\JL2CM3.dll V2.99.23.0
 Dialog DLL:      TCM.DLL V1.27.0.0
  
 <h2>Project:</h2>
-D:\desktop\patrol_car3.0\USER\patrol_car.uvprojx
+D:\desktop\patrol_car3.0\stm32\USER\patrol_car.uvprojx
 Project File Date:  07/25/2017
 
 <h2>Output:</h2>
@@ -42,13 +42,15 @@ compiling main.c...
   void pidInit(float refresh_interval, float upper_limit, float lower_limit);
 ..\HARDWARE\servo.h(3): warning:  #1-D: last line of file ends without a newline
   void setServoDegree(u8 degree);//degree´Ó15µ½75
-main.c(137): warning:  #1-D: last line of file ends without a newline
+main.c(76): warning:  #223-D: function "abs" declared implicitly
+  	setDesiredPoint(abs(leftEncoderVal));
+main.c(177): warning:  #1-D: last line of file ends without a newline
   }
-main.c: 8 warnings, 0 errors
+main.c: 9 warnings, 0 errors
 linking...
-Program Size: Code=19576 RO-data=568 RW-data=124 ZI-data=1836  
+Program Size: Code=19896 RO-data=568 RW-data=136 ZI-data=1832  
 FromELF: creating hex file...
-"..\OBJ\PWM.axf" - 0 Error(s), 8 Warning(s).
+"..\OBJ\PWM.axf" - 0 Error(s), 9 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_patrolCar

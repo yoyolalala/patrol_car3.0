@@ -12,20 +12,31 @@
 #define DIAMETER 62 //车轮直径62mm
 //#define INF 3.402823466e+38F
 u8 pct1=70;
-u8 pct2=70;
+u8 pct2=70; //初始化电机占空比
 u8 i,len; //串口接收数据用
-u16 inputEncoderVal=0; 
+u16 receivedData;//串口接收到树莓派的数据
 u16 dis;//走过距离
+u8 dataNum;//判断树莓派接收数据的数量
+u8 rxData[2];//用来存储黑线位置的数组
+u16 center;//接收到的线中点坐标
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
 bool isForwardStraight=false;
 bool isForwardBegin=false; 
+bool isUseCamera=true;//未开始识别抓取小球时 启动摄像头巡线
+float pidOutput;
 extern int circle;
 extern int leftEncoderVal;
 extern int rightEncoderVal;
-extern float error;
-extern float set_point;
-float pidOutput;
+//extern float error;
+//extern float set_point;
+typedef enum
+{
+	findLine=1,
+	cross=2,
+	check=3,
+}runningState_Typedef;
+runningState_Typedef runningState;
 void setup()
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);//设置系统中断优先级分组4
@@ -34,37 +45,37 @@ void setup()
 	rasLED_Init();
 	motorInit();
 	uart1_init(38400);//串口初始化必须放在电机初始化后
-	uart2_init(115200);
+	uart2_init(38400);//串口1用于树莓派接收数据 串口2向上位机发送数据
 	Encoder1_Init_TIM4();
 	Encoder2_Init_TIM3();
 	TIM2_Int_Init(499, 8399); //0.05s
 	servoPwmInit(99,2766);
-	pidInit(0.01,pct1-1,pct1-99);//初始化刷新间隔 上下限
+	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 }
 void backStraight(u8 pct1,u8 pct2)
 {
+	setWeights(0.425, 0.16, 0.001);//只装底盘时完美PID参数
 	isBackStraight=true;
 	
 	motor1SetPctback(pct1);
 	setDesiredPoint(leftEncoderVal);
 	pidOutput=refresh(rightEncoderVal);
 	if(leftEncoderVal<rightEncoderVal)
-	{	 motor2SetPctback(pct2+pidOutput);
-		 pct2=pct2+pidOutput;
+	{	 motor2SetPctback(pct2-pidOutput); //pidOutput为负值
+		 pct2=pct2-pidOutput;
 	}
 	else 
-	{	motor2SetPctback(pct2-pidOutput);
-		pct2=pct2-pidOutput;
+	{	motor2SetPctback(pct2+pidOutput);
+		pct2=pct2+pidOutput;
 	}
 }
 void forwardStraight(u8 pct1,u8 pct2)
 {
-	isForwardStraight=true;
-	
+	setWeights(0.46, 0.17, 0.001);
 	motor1SetPct(pct1);
-	setDesiredPoint(leftEncoderVal);
-	pidOutput=refresh(rightEncoderVal);
-	if(leftEncoderVal<rightEncoderVal)
+	setDesiredPoint(abs(leftEncoderVal));
+	pidOutput=refresh(abs(rightEncoderVal));
+	if(abs(leftEncoderVal)<abs(rightEncoderVal))
 	{	 motor2SetPct(pct2+pidOutput);
 		 pct2=pct2+pidOutput;
 	}
@@ -76,24 +87,54 @@ void forwardStraight(u8 pct1,u8 pct2)
 int main(void)
 { 
 	setup();
-    setServoDegree(60);// 占空比从43-60。60最高 为启用摄像头的初始位置
 	delay_ms(1000);
 	//motor1SetPct(pct1);//越大 转速越慢  70-33    30-116
 	//motor2SetPct(pct2);
 	stopMotor();
 	//backStraight(70,70);
-	setWeights(0.42, 0.1, 0.001); //p再大一点
     while(1) 
 	{   
-		if(USART1_RX_STA&0x8000) //mark1
+		if(isUseCamera)
 		{
-			len = USART1_RX_STA & 0x3fff; //mark2
+			setServoDegree(60);// 占空比从43-60。60最高 为启用摄像头的初始位置
+		}
+		dataNum=0;
+		if(USART1_RX_STA&0x8000) 
+		{
+			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
+			len = USART1_RX_STA & 0x3fff; 
 			for (i = 0; i< len;i++)
 			{
-				inputEncoderVal=inputEncoderVal+(USART_RX_BUF[i] - 0x30)*pow(10, len - i - 1);
+				receivedData=receivedData+(USART_RX_BUF[i] - 0x30)*pow(10, len - i - 1);
 				while (USART_GetFlagStatus(USART1, USART_FLAG_TC) != SET);
 			}
-			USART1_RX_STA = 0; //mark3
+			USART1_RX_STA = 0;
+			
+			if(dataNum==0 & receivedData==1)
+			{
+				runningState=findLine;
+		        dataNum++;
+			}else if(dataNum==0 & receivedData==2)
+			{
+				runningState=cross;
+		        dataNum++;
+			}else if(dataNum==0 & receivedData==3)
+			{
+				runningState=check;
+		        dataNum++;
+			}
+			
+			if(dataNum==1)
+			{
+				rxData[0]=receivedData;
+			    dataNum++;
+			}
+			if(dataNum==2)
+			{
+				rxData[1]=receivedData;
+			    dataNum=0;
+				center=rxData[0]*256+rxData[1];
+			}
 			//setDesiredPoint(inputEncoderVal);
 			//printf("desiredVal: %d\r\n",inputEncoderVal);
 			//inputEncoderVal=0;
@@ -106,11 +147,11 @@ int main(void)
 			//motor1SetPct(pct1-pidOutput);
 			//pct1=pct1-pidOutput;
 		}
-		if(inputEncoderVal==1) //从串口输入1 开始计算距离
+		if(receivedData==1) //从串口输入1 开始计算距离
 		{
 			isBackBegin=true;
 			printf("begin computing distance!!\r\n");
-			inputEncoderVal=0;
+			receivedData=0;
 		}
 		while(isBackBegin)
 		{   
@@ -132,6 +173,5 @@ int main(void)
 		printf("leftEncoderVal:%d\r\n",leftEncoderVal);
 		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
-		rasLedToggle();
 	}
 }

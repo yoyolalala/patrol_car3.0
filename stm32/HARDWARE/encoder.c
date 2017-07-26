@@ -26,7 +26,7 @@ void Encoder1_Init_TIM4(void)  //TIM4_CH1 PD12   TIM4_CH2  PD13
 	GPIO_Init(GPIOD,&GPIO_InitStructure); //初始化
 
 	
-    TIM_TimeBaseStructure.TIM_Period = 60000; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
+    TIM_TimeBaseStructure.TIM_Period = 65535; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler = 4; //设置用来作为TIMx时钟频率除数的预分频值  不分频
 	TIM_TimeBaseStructure.TIM_ClockDivision = 10; //设置时钟分割:TDTS = Tck_tim
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
@@ -63,7 +63,7 @@ void Encoder2_Init_TIM3(void) //TIM3_CH1 PC6   TIM3_CH2 PC7
 	GPIO_Init(GPIOC,&GPIO_InitStructure); //初始化
 
 	
-    TIM_TimeBaseStructure.TIM_Period = 60000; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
+    TIM_TimeBaseStructure.TIM_Period = 65535; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler = 4; //设置用来作为TIMx时钟频率除数的预分频值  不分频
 	TIM_TimeBaseStructure.TIM_ClockDivision = 10; //设置时钟分割:TDTS = Tck_tim
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
