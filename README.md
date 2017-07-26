@@ -1,2 +1,4 @@
 # patrol_car3.0
-patrol_car_based_on_stm32_f407VGT6
+- 摄像头和树莓派识别黑线
+- stm32控制编码器和PID算法调节电机
+- 舵机控制机械臂转移小球

@@ -1,0 +1,6 @@
+project(opencvStudy)
+cmake_minimum_required(VERSION 2.8)
+FIND_PACKAGE(OpenCV REQUIRED)
+aux_source_directory(.  SRC_LIST)
+add_executable(${PROJECT_NAME} ${SRC_LIST} base_linux_serial.h base_linux_serial.cpp main.cpp)
+target_link_libraries(opencvStudy ${OpenCV_LIBS})
