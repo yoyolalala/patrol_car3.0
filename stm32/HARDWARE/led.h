@@ -4,10 +4,14 @@
 #include "delay.h"
 
 #define LED PAout(6)
+#define tmpLED PAout(7)
 #define raspberryLED PDout(4)
 
 void LED_Init(void);	
 void rasLED_Init(void);
 void ledToggle();
 void rasLedToggle();
+
+void tmpLED_Init(void);
+void tmpLedToggle();
 #endif
