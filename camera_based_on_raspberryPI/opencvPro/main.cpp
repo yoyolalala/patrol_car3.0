@@ -54,7 +54,7 @@ int main()
 
 
         isnotCross=isContourConvex(afterPoly[0]);
-        cout<<(int)isnotCross<<endl;
+
         imshow("test", dst);
         if(afterPoly.size()==1&&isnotCross==1)
         {
@@ -65,53 +65,54 @@ int main()
             a[1]=(int)(rectFindline.center.x) /256;
             a[2]=(int)(rectFindline.center.x) %256;
          //   serial.SendMsg(a,3,'1');
-            cout<<rectFindline.center.x<<endl<<state<<endl;
+            cout<<state<<endl<<rectFindline.center.x<<endl;
             lastX=rectFindline.center.x;
         }
 
         if(isnotCross==0)
         {
             state=cross;
-            cout<<state<<endl;
             char a[1];
             a[0]=state;
         //    serial.SendMsg(a,1,'2');
+            cout<<state<<endl;
         }
         if(afterPoly.size()==3&&isnotCross==1)
         {
             state=check;
-            char a[5];
+            char a[3];
             RotatedRect rectCheck1=minAreaRect(afterPoly[0]);
            // RotatedRect rectCheck2=minAreaRect(afterPoly[1]);
            // RotatedRect rectCheck3=minAreaRect(afterPoly[2]);
             a[0]=state;
-            a[1]=(int)(rectCheck1.center.x) /256;
-            a[2]=(int)(rectCheck1.center.x) %256;
-            a[3]=(int)(rectCheck1.center.y) /256;
-            a[4]=(int)(rectCheck1.center.y) %256;
-        //    serial.SendMsg(a,5,'1');
-            cout<<rectCheck1.center.x<<endl<<rectCheck1.center.y<<endl;
-            cout<<state<<endl;
+            a[1]=(int)(rectCheck1.center.y) /256;
+            a[2]=(int)(rectCheck1.center.y) %256;
+        //    a[3]=(int)(rectCheck1.center.x) /256;
+        //    a[4]=(int)(rectCheck1.center.x) %256;
+        //    serial.SendMsg(a,3,'1');
+            cout<<state<<endl<<rectCheck1.center.x<<endl<<rectCheck1.center.y<<endl;
         }
         if(afterPoly.size()==2&&isnotCross==1)
         {
             state=findLine;
-            char a[1];
+            char a[3];
             RotatedRect rectOne=minAreaRect(afterPoly[0]);
             RotatedRect rectTwo=minAreaRect(afterPoly[1]);
             int error1=fabs(lastX-rectOne.center.x);
             int error2=fabs(lastX-rectTwo.center.x);
             if(error1>error2)
                {
-                a[0]=rectTwo.center.x;
                 lastX=rectTwo.center.x;
                }
             else
                {
-                a[0]=rectOne.center.x;
                 lastX=rectOne.center.x;
                }
-            cout<<lastX;
+            a[0]=state;
+            a[1]=(int)(lastX) /256;
+            a[2]=(int)(lastX) %256;
+         //   serial.SendMsg(a,3,'1');
+            cout<<state<<endl<<lastX<<endl;
         }
      waitKey(30);
     }

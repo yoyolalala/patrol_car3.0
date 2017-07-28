@@ -42,7 +42,6 @@ void setup()
 	delay_init(168);  //初始化延时函数 SYSCLOCK
 	LED_Init();
 	rasLED_Init();
-	tmpLED_Init();
 	motorInit();
 	uart1_init(115200);//串口初始化必须放在电机初始化后
 	uart2_init(38400);//串口1用于树莓派接收数据 串口2向上位机发送数据
@@ -54,7 +53,7 @@ void setup()
 }
 void backStraight(u8 pct1,u8 pct2)
 {
-	setWeights(0.425, 0.16, 0.001);//只装底盘后退时完美PID参数
+	setWeights(0.425, 0.175, 0.001);//只装底盘后退时完美PID参数0.425  0.16  0.001
 	isBackStraight=true;
 	
 	motor1SetPctback(pct1);
@@ -90,17 +89,21 @@ int main(void)
 	delay_ms(100);
 	//motor1SetPct(pct1);//越大 转速越慢  70-33    30-116
 	//motor2SetPct(pct2);
-	stopMotor();
-	//backStraight(70,70);
+	//stopMotor();
+//	backStraight(70,70);
+//	for(int i=50;i>39;i--)
+//		{
+//			setServoDegree(i);// 占空比从35-50。50最低取球初始点 35为启用摄像头的初始位置 33掉球 40卡住球
+//			delay_ms(180); //180ms延时
+//		}
     while(1) 
-	{   
+	{
 		if(isUseCamera)
 		{
-			setServoDegree(60);// 占空比从43-60。60最高 为启用摄像头的初始位置
+			setServoDegree(35);
 		}
 		if(USART2_RX_STA&0x8000) //
 		{
-			tmpLedToggle();
 			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
 			len = USART2_RX_STA & 0x3fff; //
 			for (i = 0; i< len;i++)
@@ -159,6 +162,7 @@ int main(void)
 				isBackStraight=false;
 				isBackBegin=false;
 				circle=0;
+				//setServoDegree(33);
 			}	
 			else 
 			{
