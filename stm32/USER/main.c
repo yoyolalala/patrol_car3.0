@@ -43,7 +43,7 @@ void setup()
 	LED_Init();
 	rasLED_Init();
 	motorInit();
-	uart1_init(115200);//串口初始化必须放在电机初始化后
+	uart1_init(38400);//串口初始化必须放在电机初始化后
 	uart2_init(38400);//串口1用于树莓派接收数据 串口2向上位机发送数据
 	Encoder1_Init_TIM4();
 	Encoder2_Init_TIM3();
@@ -102,16 +102,16 @@ int main(void)
 		{
 			setServoDegree(35);
 		}
-		if(USART2_RX_STA&0x8000) //
+		if(USART1_RX_STA&0x8000) //
 		{
 			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
-			len = USART2_RX_STA & 0x3fff; //
+			len = USART1_RX_STA & 0x3fff; //
 			for (i = 0; i< len;i++)
 			{
 				receivedData=receivedData+(USART_RX_BUF[i] - 0x30)*pow(10, len - i - 1);
-				while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);//
+				while (USART_GetFlagStatus(USART1, USART_FLAG_TC) != SET);//
 			}
-			USART2_RX_STA = 0;//
+			USART1_RX_STA = 0;//
 			
 			if(dataNum==0 & receivedData==1)
 			{
