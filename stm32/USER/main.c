@@ -20,12 +20,11 @@ bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
 bool isForwardStraight=false;
 bool isUseCamera=true;//未开始识别抓取小球时 启动摄像头巡线
+bool isSecondCheck=false;//是否是第二次检测到check点
 float pidOutput;
 extern int circle;
 extern int leftEncoderVal;
 extern int rightEncoderVal;
-//extern float error;
-//extern float set_point;
 typedef enum
 {
 	findLine=1,
@@ -84,21 +83,10 @@ int main(void)
 { 
 	setup();
 	delay_ms(100);
-	//motor1SetPct(pct1);//越大 转速越慢  70-33    30-116
-	//motor2SetPct(pct2);
-	//stopMotor();
-//	backStraight(70,70);
-//	for(int i=50;i>39;i--)
-//		{
-//			setServoDegree(i);// 占空比从35-50。50最低取球初始点 35为启用摄像头的初始位置 33掉球 40卡住球
-//			delay_ms(180); //180ms延时
-//		}
-    while(1) 
+	motor1SetPct(70);//越大 转速越慢  70-33    30-116
+	motor2SetPct(70);//起始转速
+    while(1)
 	{
-		if(isUseCamera)
-		{
-			setServoDegree(35);
-		}
 		if(USART1_RX_STA&0x8000)
 		{
 			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
@@ -108,6 +96,53 @@ int main(void)
 			printf("state:%d\r\n",runningState);
 			printf("center:%d\r\n",center);
 			printf("\r\n\r\n");
+		}
+		if(isUseCamera)
+		{
+			setServoDegree(35);//35为启用摄像头的初始位置
+		}
+		if(isUseCamera&&runningState==findLine)
+		{
+			setWeights(0,0,0);
+			
+			motor1SetPctback(pct1);
+			setDesiredPoint(320);
+			pidOutput=refresh(center);
+			if(320<center) //车身向右偏 需要加快右轮速度
+			{	 motor2SetPctback(pct2+pidOutput); //pidOutput为负值
+				 pct2=pct2+pidOutput;
+			}
+			else 
+			{	motor2SetPctback(pct2-pidOutput);
+				pct2=pct2-pidOutput;
+			}
+		}else if(isUseCamera&&runningState==cross)
+		{
+			forwardStraight(60,60);
+		}else if(isUseCamera&&runningState==check&&isSecondCheck==false)
+		{	
+			forwardStraight(60,60);
+			if(center>=138)
+			{	runningState=findLine;
+				isSecondCheck=true;
+			}
+		}else if(isUseCamera&&runningState==check&&isSecondCheck==true)
+		{
+			forwardStraight(60,60);
+			if(center>=138)
+			{	
+				stopMotor();
+				isUseCamera=false;
+				forwardStraight(50,50);
+				delay_ms(500);
+				stopMotor();//前行一段距离到取球点初始点
+				for(int i=50;i>39;i--)//从取球到卡住球
+				{
+					setServoDegree(i);// 占空比从35-50。50最低取球初始点 33掉球 40卡住球
+					delay_ms(180); //180ms延时
+				}
+				isBackBegin=true;
+			}
 		}
 		if(USART2_RX_STA&0x8000)
 		{
@@ -136,8 +171,8 @@ int main(void)
 					isBackStraight=false;
 					isBackBegin=false;
 					circle=0;
-					//setServoDegree(33);
-				}	
+					setServoDegree(33);
+				}
 				else 
 				{
 					printf("leftEncoderVal:%d\r\n",leftEncoderVal);
@@ -145,8 +180,8 @@ int main(void)
 				}
 			}
 	   }
-		printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
-		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+		//printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
+		//printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
 	}
 }
