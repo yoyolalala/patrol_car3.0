@@ -83,8 +83,8 @@ int main(void)
 { 
 	setup();
 	delay_ms(100);
-	motor1SetPct(70);//越大 转速越慢  70-33    30-116
-	motor2SetPct(70);//起始转速
+	//motor1SetPct(70);//越大 转速越慢  70-33    30-116
+	//motor2SetPct(70);//起始转速
     while(1)
 	{
 		if(USART1_RX_STA&0x8000)
@@ -132,9 +132,10 @@ int main(void)
 			if(center>=138)
 			{	
 				stopMotor();
+				delay_ms(1000);//在校准点停1s以示校准
 				isUseCamera=false;
 				forwardStraight(50,50);
-				delay_ms(500);
+				delay_ms(500);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
 				for(int i=50;i>39;i--)//从取球到卡住球
 				{
@@ -161,25 +162,25 @@ int main(void)
 				printf("begin computing distance!!\r\n");
 				receivedData=0;
 			}
-			while(isBackBegin)
+		}
+		while(isBackBegin)
+		{
+			backStraight(60,60);
+			dis=circle*PI*DIAMETER;
+			if(dis>=100)
 			{
-				backStraight(60,60);
-				dis=circle*PI*DIAMETER;
-				if(dis>=100)
-				{
-					stopMotor();
-					isBackStraight=false;
-					isBackBegin=false;
-					circle=0;
-					setServoDegree(33);
-				}
-				else 
-				{
-					printf("leftEncoderVal:%d\r\n",leftEncoderVal);
-					printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
-				}
+				stopMotor();
+				isBackStraight=false;
+				isBackBegin=false;
+				circle=0;
+				setServoDegree(33);
 			}
-	   }
+			else 
+			{
+				printf("leftEncoderVal:%d\r\n",leftEncoderVal);
+				printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+			}
+		}
 		//printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
 		//printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
