@@ -8,6 +8,7 @@
 "..\obj\motor.o"
 "..\obj\encoder.o"
 "..\obj\servo.o"
+"..\obj\usart_vcan.o"
 "..\obj\delay.o"
 "..\obj\sys.o"
 "..\obj\usart.o"

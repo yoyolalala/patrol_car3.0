@@ -151,6 +151,11 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 	OSIntExit();  											 
 #endif
 } 
+void USART1_Write(u8 c)
+{
+    while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);//???????????????????
+	USART_SendData(USART1,c);
+}
 #endif	
 
 
