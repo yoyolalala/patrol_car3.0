@@ -13,11 +13,8 @@
 //#define INF 3.402823466e+38F
 u8 pct1=70;
 u8 pct2=70; //初始化电机占空比
-u8 i,len; //串口接收数据用
-u16 receivedData;//串口接收到树莓派的数据
+u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
-int dataNum=0;//判断树莓派接收数据的数量
-u8 rxData[2];//用来存储黑线位置的数组
 u16 center;//接收到的线中点坐标
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
@@ -102,75 +99,53 @@ int main(void)
 		{
 			setServoDegree(35);
 		}
-		if(USART1_RX_STA&0x8000) //
+		if(USART1_RX_STA&0x8000)
 		{
 			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
-			len = USART1_RX_STA & 0x3fff; //
+			runningState=USART_RX_BUF[0];
+			center=USART_RX_BUF[1]*256+USART_RX_BUF[2];
+			USART1_RX_STA = 0;
+			printf("state:%d\r\n",runningState);
+			printf("center:%d\r\n",center);
+			printf("\r\n\r\n");
+		}
+		if(USART2_RX_STA&0x8000)
+		{
+			u16 receivedData;//串口接收到上位机发送指令
+			len = USART2_RX_STA & 0x3fff;
 			for (i = 0; i< len;i++)
 			{
 				receivedData=receivedData+(USART_RX_BUF[i] - 0x30)*pow(10, len - i - 1);
-				while (USART_GetFlagStatus(USART1, USART_FLAG_TC) != SET);//
+				while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
 			}
-			USART1_RX_STA = 0;//
+			USART2_RX_STA = 0;
 			
-			if(dataNum==0 & receivedData==1)
+			if(receivedData==1) //从串口输入1 开始计算距离
 			{
-				runningState=findLine;
-			}else if(dataNum==0 & receivedData==2)
-			{
-				runningState=cross;
-			}else if(dataNum==0 & receivedData==3)
-			{
-				runningState=check;
+				isBackBegin=true; 
+				printf("begin computing distance!!\r\n");
+				receivedData=0;
 			}
-			
-			if(dataNum==1)
+			while(isBackBegin)
 			{
-				rxData[0]=receivedData;
-			}else if(dataNum==2)
-			{
-				rxData[1]=receivedData;
-			    dataNum=-1;
-				center=rxData[0]*256+rxData[1];
+				backStraight(60,60);
+				dis=circle*PI*DIAMETER;
+				if(dis>=100)
+				{
+					stopMotor();
+					isBackStraight=false;
+					isBackBegin=false;
+					circle=0;
+					//setServoDegree(33);
+				}	
+				else 
+				{
+					printf("leftEncoderVal:%d\r\n",leftEncoderVal);
+					printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+				}
 			}
-			dataNum++;
-			//setDesiredPoint(inputEncoderVal);
-			//printf("desiredVal: %d\r\n",inputEncoderVal);
-			//inputEncoderVal=0;
-			//printf("\r\n");
-			//printf("set_point:%f\r\n",set_point);
-		    //printf("leftEncoderVal:%d\r\n",leftEncoderVal);
-			//pidOutput=refresh(leftEncoderVal);
-			//printf("error:%f\r\n",error);
-			//printf("pidOutput:%f\r\n",pidOutput);
-			//motor1SetPct(pct1-pidOutput);
-			//pct1=pct1-pidOutput;
-		}
-		if(receivedData==1) //从串口输入1 开始计算距离
-		{
-			isBackBegin=true; 
-			printf("begin computing distance!!\r\n");
-			receivedData=0;
-		}
-		while(isBackBegin)
-		{
-			backStraight(60,60);
-			dis=circle*PI*DIAMETER;
-			if(dis>=100)
-			{
-				stopMotor();
-				isBackStraight=false;
-				isBackBegin=false;
-				circle=0;
-				//setServoDegree(33);
-			}	
-			else 
-			{
-				printf("leftEncoderVal:%d\r\n",leftEncoderVal);
-				printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
-			}
-	    }
-	    printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
+	   }
+		printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
 		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
 	}
