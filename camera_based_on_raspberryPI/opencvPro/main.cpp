@@ -54,7 +54,7 @@ int main()
 
         isnotCross=isContourConvex(afterPoly[0]);
 
-        imshow("test", dst);
+//        imshow("test", dst);
         if(afterPoly.size()==1&&isnotCross==1)
         {
             state=findLine;
@@ -122,7 +122,7 @@ int main()
             serial.SendMsg(a,5,'1');
             cout<<state<<endl<<lastX<<endl;
         }
-     waitKey(30);
+//     waitKey(30);
     }
     return 0;
 }

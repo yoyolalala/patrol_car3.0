@@ -11,11 +11,11 @@
 #define PI 3.1415936
 #define DIAMETER 62 //车轮直径62mm
 //#define INF 3.402823466e+38F
-u8 pct1=70;
-u8 pct2=70; //初始化电机占空比
 u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
+u8 pct1=60;
+u8 pct2=60;//直行时左右轮初始转速
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
 bool isForwardStraight=false;
@@ -45,14 +45,14 @@ void setup()
 	Encoder2_Init_TIM3();
 	TIM2_Int_Init(499, 8399); //0.05s
 	servoPwmInit(99,2766);
-	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 }
 void backStraight(u8 pct1,u8 pct2)
 {
+	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 	setWeights(0.425, 0.175, 0.001);//只装底盘后退时完美PID参数0.425  0.16  0.001
 	isBackStraight=true;
 	
-	motor1SetPctback(pct1);
+	motor1SetPctback(pct1);//越大 转速越慢  70-33    30-116
 	setDesiredPoint(leftEncoderVal);
 	pidOutput=refresh(rightEncoderVal);
 	if(leftEncoderVal<rightEncoderVal)
@@ -66,6 +66,7 @@ void backStraight(u8 pct1,u8 pct2)
 }
 void forwardStraight(u8 pct1,u8 pct2)
 {
+	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 	setWeights(0.46, 0.17, 0.001);
 	motor1SetPct(pct1);
 	setDesiredPoint(abs(leftEncoderVal));
@@ -83,8 +84,6 @@ int main(void)
 { 
 	setup();
 	delay_ms(100);
-	//motor1SetPct(70);//越大 转速越慢  70-33    30-116
-	//motor2SetPct(70);//起始转速
     while(1)
 	{
 		if(USART1_RX_STA&0x8000)
@@ -101,14 +100,15 @@ int main(void)
 		{
 			setServoDegree(35);//35为启用摄像头的初始位置
 		}
-		if(isUseCamera&&runningState==findLine)
+		/*if(isUseCamera&&runningState==findLine)
 		{
+			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 			setWeights(0,0,0);
 			
 			motor1SetPctback(pct1);
 			setDesiredPoint(320);
 			pidOutput=refresh(center);
-			if(320<center) //车身向右偏 需要加快右轮速度
+			if(320<center) //左轮离线近 需要加快右轮速度
 			{	 motor2SetPctback(pct2+pidOutput); //pidOutput为负值
 				 pct2=pct2+pidOutput;
 			}
@@ -144,7 +144,7 @@ int main(void)
 				}
 				isBackBegin=true;
 			}
-		}
+		}*/
 		if(USART2_RX_STA&0x8000)
 		{
 			u16 receivedData;//串口接收到上位机发送指令
@@ -181,8 +181,8 @@ int main(void)
 				printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 			}
 		}
-		//printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
-		//printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+		printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
+		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
 		ledToggle();
 	}
 }
