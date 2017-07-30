@@ -15,7 +15,7 @@ u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
 u8 pct1=60;
-u8 pct2=60;//直行时左右轮初始转速
+u8 pct2=60;//巡线时左右轮初始转速
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
 bool isForwardStraight=false;
@@ -98,7 +98,7 @@ int main(void)
 		}
 		if(isUseCamera)
 		{
-			setServoDegree(35);//35为启用摄像头的初始位置
+			setServoDegree(50);//50最低取球位置 35为启用摄像头的初始位置
 		}
 		/*if(isUseCamera&&runningState==findLine)
 		{
