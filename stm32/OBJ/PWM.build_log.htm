@@ -42,17 +42,21 @@ compiling main.c...
   void pidInit(float refresh_interval, float upper_limit, float lower_limit);
 ..\HARDWARE\servo.h(3): warning:  #1-D: last line of file ends without a newline
   void setServoDegree(u8 degree);//degree从15到75
-main.c(72): warning:  #223-D: function "abs" declared implicitly
+main.c(75): warning:  #223-D: function "abs" declared implicitly
   	setDesiredPoint(abs(leftEncoderVal));
-main.c(92): warning:  #188-D: enumerated type mixed with another type
+main.c(94): warning:  #188-D: enumerated type mixed with another type
   			runningState=USART_RX_BUF[0];
-main.c(188): warning:  #1-D: last line of file ends without a newline
+main.c(168): warning:  #177-D: variable "receivedData"  was declared but never referenced
+  			u16 receivedData;//串口接收到上位机发送指令
+main.c(201): warning:  #223-D: function "abs" declared implicitly
+  		printf("leftEncoderVal:%d\r\n",abs(leftEncoderVal));//重定义串口2的printf
+main.c(205): warning:  #1-D: last line of file ends without a newline
   }
-main.c: 10 warnings, 0 errors
+main.c: 12 warnings, 0 errors
 linking...
-Program Size: Code=19800 RO-data=568 RW-data=132 ZI-data=1836  
+Program Size: Code=13748 RO-data=424 RW-data=140 ZI-data=1836  
 FromELF: creating hex file...
-"..\OBJ\PWM.axf" - 0 Error(s), 10 Warning(s).
+"..\OBJ\PWM.axf" - 0 Error(s), 12 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_patrolCar

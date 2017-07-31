@@ -14,8 +14,8 @@
 u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
-u8 pct1=60;
-u8 pct2=60;//巡线时左右轮初始转速
+u8 pct1=50;
+u8 pct2=50;//巡线时左右轮初始转速
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
 bool isForwardStraight=false;
@@ -48,42 +48,44 @@ void setup()
 }
 void backStraight(u8 pct1,u8 pct2)
 {
+	static int pwmRight = 30;
 	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
-	setWeights(0.425, 0.175, 0.001);//只装底盘后退时完美PID参数0.425  0.16  0.001
+	
+	setWeights(0.25, 0.0165, 0.001);
 	isBackStraight=true;
 	
 	motor1SetPctback(pct1);//越大 转速越慢  70-33    30-116
 	setDesiredPoint(leftEncoderVal);
 	pidOutput=refresh(rightEncoderVal);
-	if(leftEncoderVal<rightEncoderVal)
-	{	 motor2SetPctback(pct2-pidOutput); //pidOutput为负值
-		 pct2=pct2-pidOutput;
-	}
-	else 
-	{	motor2SetPctback(pct2+pidOutput);
-		pct2=pct2+pidOutput;
-	}
+	pwmRight = - pidOutput + pwmRight;
+	if(pwmRight > 99)
+		pwmRight = 99;
+	if(pwmRight < 0)
+		pwmRight = 0;
+	motor2SetPctback(pwmRight);
 }
 void forwardStraight(u8 pct1,u8 pct2)
 {
+	static int pwmRight = 30;
 	pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
-	setWeights(0.46, 0.17, 0.001);
-	motor1SetPct(pct1);
+	
+	setWeights(0.246, 0.0165, 0.001);
+	
+	motor1SetPct(pct1);//越大 转速越慢  70-33    30-116
 	setDesiredPoint(abs(leftEncoderVal));
 	pidOutput=refresh(abs(rightEncoderVal));
-	if(abs(leftEncoderVal)<abs(rightEncoderVal))
-	{	 motor2SetPct(pct2+pidOutput);
-		 pct2=pct2+pidOutput;
-	}
-	else 
-	{	motor2SetPct(pct2-pidOutput);
-		pct2=pct2-pidOutput;
-	}
+	pwmRight = - pidOutput + pwmRight;
+	if(pwmRight > 99)
+		pwmRight = 99;
+	if(pwmRight < 0)
+		pwmRight = 0;
+	motor2SetPct(pwmRight);
 }
 int main(void)
 { 
 	setup();
 	delay_ms(100);
+	stopMotor();
     while(1)
 	{
 		if(USART1_RX_STA&0x8000)
@@ -98,10 +100,25 @@ int main(void)
 		}
 		if(isUseCamera)
 		{
-			setServoDegree(50);//50最低取球位置 35为启用摄像头的初始位置
+			setServoDegree(35);//49最低取球位置 35为启用摄像头的初始位置
 		}
-		/*if(isUseCamera&&runningState==findLine)
+		if(isUseCamera&&runningState==findLine)
 		{
+		/*	static int pwmRight = 50;
+			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
+
+			setWeights(0.25, 0.0165, 0.001);
+
+			motor1SetPctback(pct1);//越大 转速越慢  70-33    30-116
+			setDesiredPoint(leftEncoderVal);
+			pidOutput=refresh(rightEncoderVal);
+			pwmRight = - pidOutput + pwmRight;
+			if(pwmRight > 99)
+				pwmRight = 99;
+			if(pwmRight < 0)
+				pwmRight = 0;
+			motor2SetPctback(pwmRight);
+			*/
 			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
 			setWeights(0,0,0);
 			
@@ -118,71 +135,71 @@ int main(void)
 			}
 		}else if(isUseCamera&&runningState==cross)
 		{
-			forwardStraight(60,60);
+			forwardStraight(30,30);
 		}else if(isUseCamera&&runningState==check&&isSecondCheck==false)
 		{	
-			forwardStraight(60,60);
+			forwardStraight(30,30);
 			if(center>=138)
 			{	runningState=findLine;
 				isSecondCheck=true;
 			}
 		}else if(isUseCamera&&runningState==check&&isSecondCheck==true)
 		{
-			forwardStraight(60,60);
+			forwardStraight(30,30);
 			if(center>=138)
 			{	
 				stopMotor();
 				delay_ms(1000);//在校准点停1s以示校准
 				isUseCamera=false;
-				forwardStraight(50,50);
+				forwardStraight(30,30);
 				delay_ms(500);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
-				for(int i=50;i>39;i--)//从取球到卡住球
+				isBackBegin=true;
+				for(int i=49;i>39;i--)//从取球到卡住球
 				{
 					setServoDegree(i);// 占空比从35-50。50最低取球初始点 33掉球 40卡住球
 					delay_ms(180); //180ms延时
 				}
-				isBackBegin=true;
+				delay_ms(1000);
 			}
-		}*/
+		}
 		if(USART2_RX_STA&0x8000)
 		{
 			u16 receivedData;//串口接收到上位机发送指令
-			len = USART2_RX_STA & 0x3fff;
-			for (i = 0; i< len;i++)
-			{
-				receivedData=receivedData+(USART_RX_BUF[i] - 0x30)*pow(10, len - i - 1);
-				while (USART_GetFlagStatus(USART2, USART_FLAG_TC) != SET);
-			}
 			USART2_RX_STA = 0;
 			
-			if(receivedData==1) //从串口输入1 开始计算距离
+			if(USART_RX_BUF[0]==1||USART_RX_BUF[0]=='1') //从串口输入1 开始计算距离
 			{
 				isBackBegin=true; 
 				printf("begin computing distance!!\r\n");
-				receivedData=0;
+				for(int i=49;i>39;i--)//从取球到卡住球
+					{
+						setServoDegree(i);// 占空比从35-50。50最低取球初始点 33掉球 40卡住球
+						delay_ms(180); //180ms延时
+					}
+				delay_ms(1000);
 			}
 		}
+		
 		while(isBackBegin)
 		{
-			backStraight(60,60);
+			backStraight(30,30);
 			dis=circle*PI*DIAMETER;
-			if(dis>=100)
-			{
+			if(dis>=194)
+			{   
+				backStraight(30,30);
+				delay_ms(335);
 				stopMotor();
 				isBackStraight=false;
 				isBackBegin=false;
-				circle=0;
-				setServoDegree(33);
-			}
-			else 
-			{
-				printf("leftEncoderVal:%d\r\n",leftEncoderVal);
-				printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+				for(int i=33;i<41;i++)
+				{	setServoDegree(i);
+					delay_ms(180);
+				}
 			}
 		}
-		printf("leftEncoderVal:%d\r\n",leftEncoderVal);//重定义串口2的printf
-		printf("rightEncoderVal:%d\r\n\r\n",rightEncoderVal);
+		printf("leftEncoderVal:%d\r\n",abs(leftEncoderVal));//重定义串口2的printf
+		printf("rightEncoderVal:%d\r\n\r\n",abs(rightEncoderVal));
 		ledToggle();
 	}
 }
