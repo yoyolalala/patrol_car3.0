@@ -47,7 +47,7 @@ int main()
 
         vector<vector<Point> >afterPoly(contours.size());
         for(int i=0;i<(int)contours.size();i++)
-            approxPolyDP(contours[i],afterPoly[i],25,true);
+            approxPolyDP(contours[i],afterPoly[i],50,true);
 
         Mat dst(binImg.size(),CV_8U,Scalar(255));
         drawContours(dst,afterPoly,-1,Scalar(0),2);

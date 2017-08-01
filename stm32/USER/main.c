@@ -11,7 +11,7 @@
 #define PI 3.1415936
 #define DIAMETER 62 //车轮直径62mm
 //#define INF 3.402823466e+38F
-u8 i,len; //串口2接收数据用
+//u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
 u8 pct1=50;
@@ -94,76 +94,65 @@ int main(void)
 			runningState=USART_RX_BUF[0];
 			center=USART_RX_BUF[1]*256+USART_RX_BUF[2];
 			USART1_RX_STA = 0;
-			printf("state:%d\r\n",runningState);
+			/*printf("state:%d\r\n",runningState);
 			printf("center:%d\r\n",center);
-			printf("\r\n\r\n");
+			printf("\r\n\r\n");*/
 		}
 		if(isUseCamera)
 		{
 			setServoDegree(35);//49最低取球位置 35为启用摄像头的初始位置
 		}
-		if(isUseCamera&&runningState==findLine)
+		if(isUseCamera && runningState==findLine)
 		{
-		/*	static int pwmRight = 50;
+			static int pwmRight = 50;
 			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
-
-			setWeights(0.25, 0.0165, 0.001);
-
-			motor1SetPctback(pct1);//越大 转速越慢  70-33    30-116
-			setDesiredPoint(leftEncoderVal);
-			pidOutput=refresh(rightEncoderVal);
-			pwmRight = - pidOutput + pwmRight;
+			setWeights(0.04,0.001,0);
+			
+			motor1SetPct(pct1);
+			motor2SetPct(pct2);
+			setDesiredPoint(320);
+			pidOutput = refresh(center);//左轮离线近时 center>320 pidOutput为负
+			
+			pwmRight = pidOutput + pwmRight;
 			if(pwmRight > 99)
 				pwmRight = 99;
 			if(pwmRight < 0)
 				pwmRight = 0;
-			motor2SetPctback(pwmRight);
-			*/
-			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
-			setWeights(0,0,0);
-			
-			motor1SetPctback(pct1);
-			setDesiredPoint(320);
-			pidOutput=refresh(center);
 			if(320<center) //左轮离线近 需要加快右轮速度
-			{	 motor2SetPctback(pct2+pidOutput); //pidOutput为负值
-				 pct2=pct2+pidOutput;
-			}
-			else 
-			{	motor2SetPctback(pct2-pidOutput);
-				pct2=pct2-pidOutput;
-			}
+				motor2SetPctback(pwmRight);
+			else motor1SetPct(pwmRight);
 		}else if(isUseCamera&&runningState==cross)
 		{
-			forwardStraight(30,30);
-		}else if(isUseCamera&&runningState==check&&isSecondCheck==false)
+			forwardStraight(50,50);
+		}else if(isUseCamera && runningState==check && isSecondCheck==false)
 		{	
-			forwardStraight(30,30);
-			if(center>=138)
+			forwardStraight(50,50);
+			if(center<=260)
 			{	runningState=findLine;
 				isSecondCheck=true;
 			}
-		}else if(isUseCamera&&runningState==check&&isSecondCheck==true)
+		}else if(isUseCamera && runningState==check && isSecondCheck==true)
 		{
-			forwardStraight(30,30);
-			if(center>=138)
+			forwardStraight(50,50);
+			if(center <= 260)
 			{	
 				stopMotor();
 				delay_ms(1000);//在校准点停1s以示校准
 				isUseCamera=false;
-				forwardStraight(30,30);
-				delay_ms(500);//车在校准点停止后 直行一段距离 由延时时间决定
+				setServoDegree(49);
+				//forwardStraight(30,30);
+				delay_ms(200);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
-				isBackBegin=true;
-				for(int i=49;i>39;i--)//从取球到卡住球
+				for(int i=48;i>39;i--)//从取球到卡住球
 				{
-					setServoDegree(i);// 占空比从35-50。50最低取球初始点 33掉球 40卡住球
+					setServoDegree(i);// 占空比从35-49。49最低取球初始点 33掉球 40卡住球
 					delay_ms(180); //180ms延时
 				}
-				delay_ms(1000);
+				isBackBegin=true;
+				delay_ms(500);
 			}
 		}
-		if(USART2_RX_STA&0x8000)
+	/*	if(USART2_RX_STA&0x8000)
 		{
 			u16 receivedData;//串口接收到上位机发送指令
 			USART2_RX_STA = 0;
@@ -183,6 +172,7 @@ int main(void)
 		
 		while(isBackBegin)
 		{
+			delay_ms(500);
 			backStraight(30,30);
 			dis=circle*PI*DIAMETER;
 			if(dis>=194)
@@ -197,9 +187,9 @@ int main(void)
 					delay_ms(180);
 				}
 			}
-		}
-		printf("leftEncoderVal:%d\r\n",abs(leftEncoderVal));//重定义串口2的printf
-		printf("rightEncoderVal:%d\r\n\r\n",abs(rightEncoderVal));
+		}*/
+		//printf("leftEncoderVal:%d\r\n",abs(leftEncoderVal));//重定义串口2的printf
+		//printf("rightEncoderVal:%d\r\n\r\n",abs(rightEncoderVal));
 		ledToggle();
 	}
 }
