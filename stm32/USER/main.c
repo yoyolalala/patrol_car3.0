@@ -10,26 +10,27 @@
 #include "stdbool.h"
 #define PI 3.1415936
 #define DIAMETER 62 //车轮直径62mm
+#define kp 0.11 //巡线时位置PID参数
+#define kd 0.15
 //#define INF 3.402823466e+38F
 //u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
-u8 pct1=50;
-u8 pct2=50;//巡线时左右轮初始转速
+u16 lastDiff=0;
+u8 pct1=25;
+u8 pct2=25;//巡线时左右轮初始转速
 bool isBackStraight=false;
 bool isBackBegin=false; //是否开始计算距离
-bool isForwardStraight=false;
 bool isUseCamera=true;//未开始识别抓取小球时 启动摄像头巡线
-bool isSecondCheck=false;//是否是第二次检测到check点
 float pidOutput;
 extern int circle;
 extern int leftEncoderVal;
 extern int rightEncoderVal;
 typedef enum
 {
-	findLine=1,
-	cross=2,
-	check=3,
+	findLine= 1,
+	lostLine= 2,
+	check= 3,
 }runningState_Typedef;
 runningState_Typedef runningState;
 void setup()
@@ -37,9 +38,8 @@ void setup()
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);//设置系统中断优先级分组4
 	delay_init(168);  //初始化延时函数 SYSCLOCK
 	LED_Init();
-	rasLED_Init();
 	motorInit();
-	uart1_init(38400);//串口初始化必须放在电机初始化后
+	uart1_init(115200);//串口初始化必须放在电机初始化后
 	uart2_init(38400);//串口1用于树莓派接收数据 串口2向上位机发送数据
 	Encoder1_Init_TIM4();
 	Encoder2_Init_TIM3();
@@ -81,16 +81,42 @@ void forwardStraight(u8 pct1,u8 pct2)
 		pwmRight = 0;
 	motor2SetPct(pwmRight);
 }
+void setLeftPID(int leftDesiredEncoderVal)
+{
+	pidInit(0.01,pct1-1,pct1-99);
+	setWeights(0.232, 0.0165, 0.001);
+	motor1SetPct(pct1);
+	setDesiredPoint(leftDesiredEncoderVal);
+	pidOutput = refresh(abs(leftEncoderVal));
+	pct1 = - pidOutput + pct1; 
+	if(pct1 > 99)
+		pct1=99;
+	if(pct1 < 0)
+		pct1 = 0;
+	motor1SetPct(pct1);
+}
+void setRightPID(int rightDesiredEncoderVal)
+{
+	pidInit(0.01,pct2-1,pct2-99);
+	setWeights(0.232, 0.0165, 0.001);
+	motor2SetPct(pct2);
+	setDesiredPoint(rightDesiredEncoderVal);
+	pidOutput = refresh(abs(rightEncoderVal));
+	pct2 = - pidOutput + pct2;
+	if(pct2 > 99)
+		pct2=99;
+	if(pct2 < 0)
+		pct2 = 0;
+	motor2SetPct(pct2);
+}
 int main(void)
 { 
 	setup();
 	delay_ms(100);
-	stopMotor();
     while(1)
 	{
 		if(USART1_RX_STA&0x8000)
 		{
-			rasLedToggle();//PD4指示灯闪烁 32有接收到树莓派数据
 			runningState=USART_RX_BUF[0];
 			center=USART_RX_BUF[1]*256+USART_RX_BUF[2];
 			USART1_RX_STA = 0;
@@ -100,50 +126,52 @@ int main(void)
 		}
 		if(isUseCamera)
 		{
-			setServoDegree(35);//49最低取球位置 35为启用摄像头的初始位置
+			setServoDegree(38);//49最低取球位置 37为启用摄像头的初始位置 45舵机水平
 		}
 		if(isUseCamera && runningState==findLine)
+		{ 
+			u16 diff = abs(center - 320);
+			int16_t dDiff=diff-lastDiff;
+			lastDiff=diff;
+			//if(diff > 149) //max=150.886
+				//diff = 149;
+			int a = 1.205*kp*diff+kd*dDiff;
+			if(a > 20)
+				a = 20;
+			if(center == 320)
+			{
+				setLeftPID(20);
+				setRightPID(20);
+			}else if(center > 320) //右轮离线近
+			{
+				setRightPID(20-a);//1.23
+				setLeftPID(20-0.09*kp*diff);//0.18
+			}else{ 
+				setRightPID(20-0.09*kp*diff);
+				setLeftPID(20-a);
+				}
+		}
+		if(isUseCamera && runningState==lostLine)
 		{
-			static int pwmRight = 50;
-			pidInit(0.01,pct2-1,pct2-99);//初始化刷新间隔 上下限
-			setWeights(0.04,0.001,0);
-			
-			motor1SetPct(pct1);
-			motor2SetPct(pct2);
-			setDesiredPoint(320);
-			pidOutput = refresh(center);//左轮离线近时 center>320 pidOutput为负
-			
-			pwmRight = pidOutput + pwmRight;
-			if(pwmRight > 99)
-				pwmRight = 99;
-			if(pwmRight < 0)
-				pwmRight = 0;
-			if(320<center) //左轮离线近 需要加快右轮速度
-				motor2SetPctback(pwmRight);
-			else motor1SetPct(pwmRight);
-		}else if(isUseCamera&&runningState==cross)
+			continue;
+		}
+		if(isUseCamera && runningState==check)
 		{
-			forwardStraight(50,50);
-		}else if(isUseCamera && runningState==check && isSecondCheck==false)
-		{	
-			forwardStraight(50,50);
-			if(center<=260)
-			{	runningState=findLine;
-				isSecondCheck=true;
-			}
-		}else if(isUseCamera && runningState==check && isSecondCheck==true)
-		{
-			forwardStraight(50,50);
-			if(center <= 260)
+			setLeftPID(10);
+			setRightPID(10);
+			if(center <= 300)
 			{	
 				stopMotor();
 				delay_ms(1000);//在校准点停1s以示校准
 				isUseCamera=false;
-				setServoDegree(49);
-				//forwardStraight(30,30);
-				delay_ms(200);//车在校准点停止后 直行一段距离 由延时时间决定
+				setServoDegree(48);
+				stopMotor();
+				delay_ms(1000);
+				setLeftPID(20);
+				setRightPID(20);
+				delay_ms(1550);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
-				for(int i=48;i>39;i--)//从取球到卡住球
+				for(int i=47;i>39;i--)//从取球到卡住球
 				{
 					setServoDegree(i);// 占空比从35-49。49最低取球初始点 33掉球 40卡住球
 					delay_ms(180); //180ms延时
@@ -168,26 +196,26 @@ int main(void)
 					}
 				delay_ms(1000);
 			}
-		}
-		
+		}*/
 		while(isBackBegin)
 		{
 			delay_ms(500);
 			backStraight(30,30);
 			dis=circle*PI*DIAMETER;
-			if(dis>=194)
+			if(dis>=190)
 			{   
-				backStraight(30,30);
-				delay_ms(335);
+				backStraight(20,20);
+				delay_ms(100);
 				stopMotor();
 				isBackStraight=false;
 				isBackBegin=false;
-				for(int i=33;i<41;i++)
+				for(int i=33;i<39;i++)
 				{	setServoDegree(i);
 					delay_ms(180);
 				}
+				setServoDegree(33);
 			}
-		}*/
+		}
 		//printf("leftEncoderVal:%d\r\n",abs(leftEncoderVal));//重定义串口2的printf
 		//printf("rightEncoderVal:%d\r\n\r\n",abs(rightEncoderVal));
 		ledToggle();
