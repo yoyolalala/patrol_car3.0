@@ -126,7 +126,7 @@ int main(void)
 		}
 		if(isUseCamera)
 		{
-			setServoDegree(38);//49最低取球位置 37为启用摄像头的初始位置 45舵机水平
+			setServoDegree(38);//49最低取球位置 38为启用摄像头的初始位置 45舵机水平
 		}
 		if(isUseCamera && runningState==findLine)
 		{ 
@@ -164,12 +164,14 @@ int main(void)
 				stopMotor();
 				delay_ms(1000);//在校准点停1s以示校准
 				isUseCamera=false;
-				setServoDegree(48);
-				stopMotor();
-				delay_ms(1000);
+				for(int i=38;i<49;i++)
+					{setServoDegree(i);
+					 delay_ms(100);
+					}
+				delay_ms(100);
 				setLeftPID(20);
 				setRightPID(20);
-				delay_ms(1550);//车在校准点停止后 直行一段距离 由延时时间决定
+				delay_ms(1500);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
 				for(int i=47;i>39;i--)//从取球到卡住球
 				{
@@ -200,12 +202,12 @@ int main(void)
 		while(isBackBegin)
 		{
 			delay_ms(500);
-			backStraight(30,30);
+			backStraight(35,35);
 			dis=circle*PI*DIAMETER;
 			if(dis>=190)
 			{   
 				backStraight(20,20);
-				delay_ms(100);
+				delay_ms(200);
 				stopMotor();
 				isBackStraight=false;
 				isBackBegin=false;
