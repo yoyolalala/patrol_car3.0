@@ -27,14 +27,57 @@ Project File Date:  07/29/2017
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 4 (build 422)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'patrolCar'
-"..\OBJ\PWM.axf" - 0 Error(s), 0 Warning(s).
+compiling main.c...
+..\HARDWARE\led.h(11): warning:  #1295-D: Deprecated declaration ledToggle - give arg types
+  void ledToggle();
+..\HARDWARE\led.h(12): warning:  #1295-D: Deprecated declaration rasLedToggle - give arg types
+  void rasLedToggle();
+..\HARDWARE\motor.h(8): warning:  #1295-D: Deprecated declaration stopMotor - give arg types
+  void stopMotor();
+..\HARDWARE\motor.h(9): warning:  #1-D: last line of file ends without a newline
+  // MOTOR_H
+..\HARDWARE\PID.h(50): warning:  #1295-D: Deprecated declaration reset - give arg types
+  void reset();
+..\HARDWARE\PID.h(52): warning:  #1-D: last line of file ends without a newline
+  void pidInit(float refresh_interval, float upper_limit, float lower_limit);
+..\HARDWARE\servo.h(3): warning:  #1-D: last line of file ends without a newline
+  void setServoDegree(u8 degree);//degree´Ó15µ½75
+main.c(75): warning:  #223-D: function "abs" declared implicitly
+  	setDesiredPoint(abs(leftEncoderVal));
+main.c(90): warning:  #223-D: function "abs" declared implicitly
+  	pidOutput = refresh(abs(leftEncoderVal));
+main.c(94): warning:  #186-D: pointless comparison of unsigned integer with zero
+  	if(pct1 < 0)
+main.c(104): warning:  #223-D: function "abs" declared implicitly
+  	pidOutput = refresh(abs(leftEncoderVal));
+main.c(108): warning:  #186-D: pointless comparison of unsigned integer with zero
+  	if(pct1 < 0)
+main.c(118): warning:  #223-D: function "abs" declared implicitly
+  	pidOutput = refresh(abs(rightEncoderVal));
+main.c(122): warning:  #186-D: pointless comparison of unsigned integer with zero
+  	if(pct2 < 0)
+main.c(132): warning:  #223-D: function "abs" declared implicitly
+  	pidOutput = refresh(abs(rightEncoderVal));
+main.c(136): warning:  #186-D: pointless comparison of unsigned integer with zero
+  	if(pct2 < 0)
+main.c(148): warning:  #188-D: enumerated type mixed with another type
+  			runningState=USART_RX_BUF[0];
+main.c(161): warning:  #223-D: function "abs" declared implicitly
+  			u16 diff = abs(center - 320);
+main.c(255): warning:  #1-D: last line of file ends without a newline
+  }
+main.c: 19 warnings, 0 errors
+linking...
+Program Size: Code=14704 RO-data=424 RW-data=136 ZI-data=1832  
+FromELF: creating hex file...
+"..\OBJ\PWM.axf" - 0 Error(s), 19 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_patrolCar
   C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.11.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
 
 <h2>Collection of Component Files used:</h2>
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

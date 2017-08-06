@@ -95,6 +95,34 @@ void setLeftPID(int leftDesiredEncoderVal)
 		pct1 = 0;
 	motor1SetPct(pct1);
 }
+void setLeftBackPID(int leftDesiredEncoderVal)
+{
+	pidInit(0.01,pct1-1,pct1-99);
+	setWeights(0.232, 0.0165, 0.001);
+	motor1SetPctback(pct1);
+	setDesiredPoint(leftDesiredEncoderVal);
+	pidOutput = refresh(abs(leftEncoderVal));
+	pct1 = - pidOutput + pct1; 
+	if(pct1 > 99)
+		pct1=99;
+	if(pct1 < 0)
+		pct1 = 0;
+	motor1SetPctback(pct1);
+}
+void setRightBackPID(int rightDesiredEncoderVal)
+{
+	pidInit(0.01,pct2-1,pct2-99);
+	setWeights(0.232, 0.0165, 0.001);
+	motor2SetPctback(pct2);
+	setDesiredPoint(rightDesiredEncoderVal);
+	pidOutput = refresh(abs(rightEncoderVal));
+	pct2 = - pidOutput + pct2;
+	if(pct2 > 99)
+		pct2=99;
+	if(pct2 < 0)
+		pct2 = 0;
+	motor2SetPctback(pct2);
+}
 void setRightPID(int rightDesiredEncoderVal)
 {
 	pidInit(0.01,pct2-1,pct2-99);
@@ -136,19 +164,19 @@ int main(void)
 			//if(diff > 149) //max=150.886
 				//diff = 149;
 			int a = 1.205*kp*diff+kd*dDiff;
-			if(a > 20)
-				a = 20;
+			if(a > 30)
+				a = 30;
 			if(center == 320)
 			{
-				setLeftPID(20);
-				setRightPID(20);
+				setLeftPID(30);
+				setRightPID(30);
 			}else if(center > 320) //右轮离线近
 			{
-				setRightPID(20-a);//1.23
-				setLeftPID(20-0.09*kp*diff);//0.18
+				setRightPID(30-a);//1.23
+				setLeftPID(30-0.09*kp*diff);//0.18
 			}else{ 
-				setRightPID(20-0.09*kp*diff);
-				setLeftPID(20-a);
+				setRightPID(30-0.09*kp*diff);
+				setLeftPID(30-a);
 				}
 		}
 		if(isUseCamera && runningState==lostLine)
@@ -171,7 +199,7 @@ int main(void)
 				delay_ms(100);
 				setLeftPID(20);
 				setRightPID(20);
-				delay_ms(1500);//车在校准点停止后 直行一段距离 由延时时间决定
+				delay_ms(1550);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
 				for(int i=47;i>39;i--)//从取球到卡住球
 				{
@@ -202,12 +230,14 @@ int main(void)
 		while(isBackBegin)
 		{
 			delay_ms(500);
-			backStraight(35,35);
+			isBackStraight = true;
+			setLeftBackPID(60);
+			setRightBackPID(60);
 			dis=circle*PI*DIAMETER;
 			if(dis>=190)
 			{   
 				backStraight(20,20);
-				delay_ms(200);
+				delay_ms(280);
 				stopMotor();
 				isBackStraight=false;
 				isBackBegin=false;
