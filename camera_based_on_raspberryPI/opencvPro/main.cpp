@@ -7,7 +7,7 @@
 #define cmd1 0x0d
 #define cmd2 0x0a
 using namespace std;
-using namespace cv;
+using namespace cv;·
 bool isnotCross=1;
 int lastX;
 typedef enum
@@ -19,8 +19,6 @@ typedef enum
 BaseLinuxSerial serial;
 int main()
 {
-    serial.Open(0);
-    serial.Init(115200);
     runningState_Typedef state;
     VideoCapture capture(1);
 	
@@ -31,18 +29,18 @@ int main()
 	}
 	while(1)
 	{
-		if(serial.Open(0) != -1)
+	if(serial.Open(0) != -1)
 			break;
         if(serial.Open(1) == -1)
             break;
 	}
-	
-    while(waitKey(30) < 0)
+	serial.Init(115200);	
+    while(waitKey(5) < 0)
     {
         Mat img;
         capture>>img;
 //double time = static_cast<double>(getTickCount()); 
-//       cv::imshow("src", img);
+ // cv::imshow("src", img);
         assert(!img.empty());
 		Mat ranImg;
         ranImg=img(Range(240,480),Range(80,560));
@@ -54,24 +52,24 @@ int main()
 //        cout<<"binThres"<<binThres<<endl;
 	    vector<vector<Point> >contours;
        findContours(binImg,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE);
-       for(int i=0;i<contours.size();)
+       vector<vector<Point> >fitcontour;
+       for(int i=0;i<contours.size();i++)
        {
-         if(contours[i].size()<minPointNum)
+         if(contours[i].size()>minPointNum)
            {
-              contours.erase(contours.begin()+i);
+              fitcontour.push_back(contours[i]);
            }
-          else i++;
       }
 
-       vector<vector<Point> >afterPoly(contours.size());
-       for(int i=0;i<(int)contours.size();i++)
-           approxPolyDP(contours[i],afterPoly[i],40,true);
+       vector<vector<Point> >afterPoly(fitcontour.size());
+	for(int i=0;i<(int)fitcontour.size();i++)
+           approxPolyDP(fitcontour[i],afterPoly[i],40,true);
 
-       Mat dst(binImg.size(),CV_8U,Scalar(255));
-       drawContours(dst,afterPoly,-1,Scalar(0),2);
+//       Mat dst(binImg.size(),CV_8U,Scalar(255));
+//       drawContours(dst,afterPoly,-1,Scalar(0),2);
 //imshow("test",dst);
         
-		if(binThres>130)
+		if(binThres>150)
 		{
 			state=lostLine;
 			char a[3];
@@ -79,7 +77,7 @@ int main()
 			a[1]=cmd1;
 			a[2]=cmd2;
 			serial.SendMsg(a,3,'1');
-           cout<<state<<endl<<"bin>130->LostLine"<<endl;
+           cout<<state<<endl<<"bin>150->LostLine"<<endl;
 			continue;
 		}
 		if(afterPoly.size()==0)

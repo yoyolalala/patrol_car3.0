@@ -16,7 +16,8 @@
 //u8 i,len; //串口2接收数据用
 u16 dis;//走过距离
 u16 center;//接收到的线中点坐标
-u16 lastDiff=0;
+u16 lastCenter = 320;
+//u16 lastDiff=0;
 u8 pct1=25;
 u8 pct2=25;//巡线时左右轮初始转速
 bool isBackStraight=false;
@@ -151,6 +152,13 @@ int main(void)
 			/*printf("state:%d\r\n",runningState);
 			printf("center:%d\r\n",center);
 			printf("\r\n\r\n");*/
+			u16 dCenter;
+			u16 centerTmp;
+			dCenter = center - lastCenter;
+			centerTmp = center;
+			if(abs(dCenter) > 130)
+				center = lastCenter;
+			lastCenter = centerTmp;
 		}
 		if(isUseCamera)
 		{
@@ -163,20 +171,20 @@ int main(void)
 			//lastDiff=diff;
 			//if(diff > 149) //max=150.886
 				//diff = 149;
-			int a = 1.205*kp*diff;
-			if(a > 30)
-				a = 30;
+			int a = 1.215*kp*diff;
+			if(a > 20)
+				a = 20;
 			if(center == 320)
 			{
-				setLeftPID(30);
-				setRightPID(30);
+				setLeftPID(20);
+				setRightPID(20);
 			}else if(center > 320) //右轮离线近
 			{
-				setRightPID(30-a);//1.23
-				setLeftPID(30+0.09*kp*diff);//0.18
+				setRightPID(20-a);//1.23
+				setLeftPID(20+0.1*kp*diff);//0.18
 			}else{ 
-				setRightPID(30-0.09*kp*diff);
-				setLeftPID(30-a);
+				setRightPID(20+0.05*kp*diff);
+				setLeftPID(20-a);
 				}
 		}
 		if(isUseCamera && runningState==lostLine)
@@ -210,11 +218,10 @@ int main(void)
 				delay_ms(500);
 			}
 		}
-	/*	if(USART2_RX_STA&0x8000)
+	   /*if(USART2_RX_STA&0x8000)
 		{
 			u16 receivedData;//串口接收到上位机发送指令
 			USART2_RX_STA = 0;
-			
 			if(USART_RX_BUF[0]==1||USART_RX_BUF[0]=='1') //从串口输入1 开始计算距离
 			{
 				isBackBegin=true; 
@@ -236,7 +243,7 @@ int main(void)
 			dis=circle*PI*DIAMETER;
 			if(dis>=190)
 			{   
-				setLeftBackPID(30);
+				setLeftBackPID(27);
 				setRightBackPID(30);
 				delay_ms(2500);
 				stopMotor();
