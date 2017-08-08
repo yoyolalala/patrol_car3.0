@@ -159,11 +159,11 @@ int main(void)
 		if(isUseCamera && runningState==findLine)
 		{ 
 			u16 diff = abs(center - 320);
-			int16_t dDiff=diff-lastDiff;
-			lastDiff=diff;
+			//int16_t dDiff=diff-lastDiff;
+			//lastDiff=diff;
 			//if(diff > 149) //max=150.886
 				//diff = 149;
-			int a = 1.205*kp*diff+kd*dDiff;
+			int a = 1.205*kp*diff;
 			if(a > 30)
 				a = 30;
 			if(center == 320)
@@ -173,7 +173,7 @@ int main(void)
 			}else if(center > 320) //右轮离线近
 			{
 				setRightPID(30-a);//1.23
-				setLeftPID(30-0.09*kp*diff);//0.18
+				setLeftPID(30+0.09*kp*diff);//0.18
 			}else{ 
 				setRightPID(30-0.09*kp*diff);
 				setLeftPID(30-a);
@@ -197,9 +197,9 @@ int main(void)
 					 delay_ms(100);
 					}
 				delay_ms(100);
-				setLeftPID(20);
-				setRightPID(20);
-				delay_ms(1550);//车在校准点停止后 直行一段距离 由延时时间决定
+				setLeftPID(10);
+				setRightPID(10);
+				delay_ms(1770);//车在校准点停止后 直行一段距离 由延时时间决定
 				stopMotor();//前行一段距离到取球点初始点
 				for(int i=47;i>39;i--)//从取球到卡住球
 				{
@@ -231,13 +231,14 @@ int main(void)
 		{
 			delay_ms(500);
 			isBackStraight = true;
-			setLeftBackPID(60);
-			setRightBackPID(60);
+			setLeftBackPID(30);
+			setRightBackPID(27);
 			dis=circle*PI*DIAMETER;
 			if(dis>=190)
 			{   
-				backStraight(20,20);
-				delay_ms(280);
+				setLeftBackPID(30);
+				setRightBackPID(30);
+				delay_ms(2500);
 				stopMotor();
 				isBackStraight=false;
 				isBackBegin=false;
