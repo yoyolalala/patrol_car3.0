@@ -8,13 +8,14 @@
 #define cmd2 0x0a
 using namespace std;
 using namespace cv;·
-bool isnotCross=1;
+bool isnotCross = 1;
+bool DEBUG = true;
 int lastX;
 typedef enum
 {
-    findLine=1,
-    lostLine=2,
-    check=3,
+    findLine = 1,
+    lostLine = 2,
+    check = 3,
 }runningState_Typedef;
 BaseLinuxSerial serial;
 int main()
@@ -34,18 +35,22 @@ int main()
         if(serial.Open(1) == -1)
             break;
 	}
+
 	serial.Init(115200);	
     while(waitKey(5) < 0)
     {
         Mat img;
         capture>>img;
+        if(DEBUG)
+             imshow("src", img);
 //double time = static_cast<double>(getTickCount()); 
- // cv::imshow("src", img);
         assert(!img.empty());
 		Mat ranImg;
         ranImg=img(Range(240,480),Range(80,560));
         cvtColor(ranImg,ranImg,CV_BGR2GRAY);
-//imshow("img",ranImg);
+
+        if(DEBUG)
+            imshow("img",ranImg);
 
        Mat binImg;
        double binThres=threshold(ranImg,binImg,99,255,THRESH_OTSU|THRESH_BINARY_INV);
@@ -54,20 +59,21 @@ int main()
        findContours(binImg,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE);
        vector<vector<Point> >fitcontour;
        for(int i=0;i<contours.size();i++)
-       {
+        {
          if(contours[i].size()>minPointNum)
-           {
               fitcontour.push_back(contours[i]);
-           }
-      }
+        }
 
-       vector<vector<Point> >afterPoly(fitcontour.size());
-	for(int i=0;i<(int)fitcontour.size();i++)
-           approxPolyDP(fitcontour[i],afterPoly[i],40,true);
+        vector<vector<Point> >afterPoly(fitcontour.size());
+        for(int i=0;i<(int)fitcontour.size();i++)
+            approxPolyDP(fitcontour[i],afterPoly[i],40,true);
 
-//       Mat dst(binImg.size(),CV_8U,Scalar(255));
-//       drawContours(dst,afterPoly,-1,Scalar(0),2);
-//imshow("test",dst);
+        if(DEBUG)
+        {
+            Mat dst(binImg.size(),CV_8U,Scalar(255));
+            drawContours(dst,afterPoly,-1,Scalar(0),2);
+            imshow("test",dst);
+        }
         
 		if(binThres>150)
 		{
@@ -81,7 +87,7 @@ int main()
 			continue;
 		}
 		if(afterPoly.size()==0)
-       {
+        {
            state=lostLine;
            char a[3];
            a[0]=state;
@@ -91,18 +97,18 @@ int main()
             
 	       cout<<state<<endl<<"findNoContours->LostLine"<<endl;
            continue;
-       }
+        }
        else isnotCross=isContourConvex(afterPoly[0]);
        if(afterPoly.size()==1&&isnotCross==1)
        {
            char a[5];
-//			bool index=0;
+//		    bool index=0;
            RotatedRect rectFindline=minAreaRect(afterPoly[0]);
- //      cout<<rectFindline.angle<<endl;
+//          cout<<rectFindline.angle<<endl;
 //			if(rectFindline.size.width>rectFindline.size.height)
 //				index=1;
 //			else index=0;
-//cout<<index;
+//          cout<<index;
 //            if(rectFindline.angle <= -3.3 && index == 0)
 //            {
 //                state = leftLine;
